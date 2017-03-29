@@ -5,6 +5,7 @@ angular.module('login.service', [])
   //Array que guarda el name y pw de usuario
   var credenciales = [];
 
+  //Funcion login
   loginUser = function(name, pw) {
       var deferred = $q.defer();
       var promise = deferred.promise;
@@ -34,7 +35,7 @@ angular.module('login.service', [])
       return promise;
   };
 
-  //Función para capturar la data y reutilizarla 
+  //Función para capturar la data y reutilizarla
   captureCredentials = function(){
 
     var deferred = $q.defer();

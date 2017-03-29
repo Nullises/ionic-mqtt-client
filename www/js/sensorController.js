@@ -4,9 +4,12 @@ angular.module('sensor.controller', [])
 
     $scope.data = {};
 
+    $scope.temperature; //Vista
+    $scope.humidity; //Vista
+
     $scope.capture = function(){
 
-      //Capturar data 
+      //Capturar data
       LoginService.captureCredentials().success(function(data){
 
         //Data recibida
@@ -50,7 +53,8 @@ angular.module('sensor.controller', [])
         });
 
         Client.on("message", function (topic, payload){
-                  console.log("New incoming message: ", [topic, payload].join(": "));
+
+                  //console.log("New incoming message: ", [topic, payload].join(": "));
                   //making sense of the recived message (topic and payload)
                   var route = topic.split("/");
                   var payload;
@@ -68,8 +72,91 @@ angular.module('sensor.controller', [])
                     data     : payload  //payload recived
                   };
 
-
+                  switch (message.type) {
+                    case 'register':
+                    registerDevice(message);
+                    break;
+                    case 'sensor':
+                    upsertSensorView(message);
+                    break;
+                    case 'actuator':
+                    upserActuatorView(message);
+                    break;
+                    default:
+                    console.log("unknown message type %s", message.type);
+                  }
                 });
+
+
+                function registerDevice(message){
+                  var currentDevice = _.find(Devices, function(device){
+                    return device.id == message.deviceId;
+                  });
+
+                  //if the device is not allready registered then add it to the Devices collection
+                  if(!currentDevice){
+                    currentDevice = {
+                      id        : message.deviceId,
+                      name      : message.name,
+                      sensors   : message.data.sensors,
+                      actuators : message.data.actuators
+                    };
+                  }
+
+                  Devices[currentDevice.id] = currentDevice;
+                }
+
+
+                function upsertSensorView(message){
+
+                  $scope.humidity = message.data.value;
+                  $scope.temperature = message.data.value;
+
+                  console.log($scope.humidity);
+                  console.log($scope.temperature);
+
+                  /*var componentId = [
+                    message.deviceId,
+                    message.type, //here type will allways equal to "sensor"
+                    message.name
+                  ].join('-');
+
+                  if(componentId === 'fakeid-sensor-temperature'){
+                    //console.log(message.data.value);
+                    $scope.temperature = message.data.value;
+                  }else if(componentId === 'fakeid-sensor-humidity'){
+                    //console.log(message.data.value);
+                    $scope.humidity = message.data.value;
+                  }*/
+
+                  //console.log(message.data.value);
+
+                  //$scope.temperature = message.data.value;
+                  //$scope.humidity = message.data.value;
+
+                  //var view = $("#"+componentId)[0];
+
+                  //console.log(view);
+
+                  /*if(view){
+                    //if the view for the sensor its allready rendererd update his values
+                    $(view).find(".sensor-value").html(message.data.value);
+                    $(view).find(".sensor-origin").html(message.data.origin);
+                  }else{
+                    //if not, add it to the main-page
+                    var ctx = {
+                      id     : componentId,
+                      origin : message.data.origin,
+                      value  : message.data.value
+                    };
+                    var html = Handlebars.templates[message.name](ctx);
+                    $("#main-page").append(html);
+                  }*/
+                }
+
+                function upserActuatorView(){
+
+                }
 
 
       }).error(function(data){
