@@ -1,58 +1,63 @@
 angular.module('login.service', [])
 
 .service('LoginService', function($q) {
-    return {
-        loginUser: function(name, pw) {
-            var deferred = $q.defer();
-            var promise = deferred.promise;
 
-            if (name == 'alice' && pw == 'secret') {
-                deferred.resolve('Bienvenido ' + name + '!');
-            } else {
-                deferred.reject('Credenciales erróneas');
-            }
-            promise.success = function(fn) {
-                promise.then(fn);
-                return promise;
-            }
-            promise.error = function(fn) {
-                promise.then(null, fn);
-                return promise;
-            }
-            return promise;
-        },
+  //Array que guarda el name y pw de usuario
+  var credenciales = [];
 
-        //Función para capturar la data y reutilizarla (TEMPORAL)
-        captureCredentials: function(name, pw){
+  loginUser = function(name, pw) {
+      var deferred = $q.defer();
+      var promise = deferred.promise;
 
-          var deferred = $q.defer();
-          var promise = deferred.promise;
+      if (name == 'alice' && pw == 'secret') {
+          deferred.resolve('Bienvenido ' + name + '!');
 
-          if (name == 'alice' && pw == 'secret') {
-
-              //Objeto credentials
-              var credentials = {
-                name: name,
-                secret: pw
-              }
-
-              //Devolver objeto credentials en la promesa
-              deferred.resolve(credentials);
-
-          } else {
-              deferred.reject('Credenciales erróneas');
+          //Objeto para pasar al array
+          var resuelto = {
+            name : name,
+            secret: pw
           }
-          promise.success = function(fn) {
-              promise.then(fn);
-              return promise;
-          }
-          promise.error = function(fn) {
-              promise.then(null, fn);
-              return promise;
-          }
+
+          credenciales.push(resuelto);
+
+      } else {
+          deferred.reject('Credenciales erróneas');
+      }
+      promise.success = function(fn) {
+          promise.then(fn);
           return promise;
+      }
+      promise.error = function(fn) {
+          promise.then(null, fn);
+          return promise;
+      }
+      return promise;
+  };
 
-        }
+  //Función para capturar la data y reutilizarla 
+  captureCredentials = function(){
 
+    var deferred = $q.defer();
+    var promise = deferred.promise;
+
+    deferred.resolve(credenciales);
+
+    deferred.reject("Error");
+
+    promise.success = function(fn) {
+        promise.then(fn);
+        return promise;
+    }
+    promise.error = function(fn) {
+        promise.then(null, fn);
+        return promise;
+    }
+    return promise;
+
+  };
+    //Retornar ambas funciones
+    return {
+      loginUser: loginUser,
+      captureCredentials: captureCredentials,
     }
 })
